@@ -1,0 +1,1089 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drawing Battle</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+        body {
+            box-sizing: border-box;
+			transform: scale(0.75);
+            transform-origin: top left;
+            width: 133.33vw; /* 100vw / 0.75 */
+            height: 133.33vh;
+            overflow: auto;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-20px); }
+            60% { transform: translateY(-10px); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 30px rgba(34, 197, 94, 0.6); }
+            50% { box-shadow: 0 0 50px rgba(34, 197, 94, 0.9); }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes rainbow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        @keyframes drawingPulse {
+            0%, 100% { border-color: rgba(59, 130, 246, 0.5); }
+            50% { border-color: rgba(59, 130, 246, 1); }
+        }
+        
+        @keyframes blinkYellow {
+            0%, 100% { color: #fbbf24; }
+            50% { color: #fde047; }
+        }
+        
+        @keyframes blinkGreen {
+            0%, 100% { color: #10b981; }
+            50% { color: #34d399; }
+        }
+        
+        @keyframes blinkRed {
+            0%, 100% { color: #ef4444; }
+            50% { color: #f87171; }
+        }
+        
+        @keyframes winner {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.1) rotate(-5deg); }
+            75% { transform: scale(1.1) rotate(5deg); }
+        }
+		
+		footer {
+           margin-top: 50px;
+		   font-family: 'Arial', sans-serif;
+           font-size: 15px;
+		   color: #ffffff;
+           opacity: 0.5;
+        }
+        
+        .pulse { animation: pulse 2s infinite; }
+        .bounce { animation: bounce 0.6s ease-in-out; }
+        .shake { animation: shake 0.5s ease-in-out; }
+        .glow { animation: glow 1.5s ease-in-out infinite; }
+        .slide-in { animation: slideIn 0.5s ease-out; }
+        .winner { animation: winner 1s ease-in-out infinite; }
+        .rainbow { 
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: rainbow 3s ease infinite;
+        }
+        
+        .drawing-canvas {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
+            border: 4px solid rgba(59, 130, 246, 0.3);
+            backdrop-filter: blur(10px);
+            cursor: crosshair;
+            transition: all 0.3s ease;
+        }
+        
+        .drawing-canvas.active {
+            animation: drawingPulse 2s infinite;
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.4);
+        }
+        
+        .drawing-canvas.correct {
+            border-color: #10b981;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.1));
+            animation: glow 1s ease-in-out;
+        }
+        
+        .drawing-canvas.incorrect {
+            border-color: #ef4444;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.1));
+            animation: shake 0.5s ease-in-out;
+        }
+        
+        .question-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(20px);
+        }
+        
+        .player-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(15px);
+        }
+        
+        .player1-card {
+            border-left: 6px solid #3b82f6;
+        }
+        
+        .player2-card {
+            border-right: 6px solid #ef4444;
+        }
+        
+        .score-display {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 165, 0, 0.2));
+            border: 2px solid rgba(255, 215, 0, 0.5);
+            backdrop-filter: blur(10px);
+        }
+        
+        .progress-container {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        
+        .control-button {
+            background: linear-gradient(145deg, rgba(255,255,255,0.2), rgba(255,255,255,0.05));
+            border: 2px solid rgba(255,255,255,0.3);
+            backdrop-filter: blur(15px);
+            transition: all 0.3s ease;
+        }
+        
+        .control-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            border-color: rgba(255,255,255,0.6);
+        }
+        
+        .blinking-yellow { animation: blinkYellow 1.5s ease-in-out infinite; }
+        .blinking-green { animation: blinkGreen 1.5s ease-in-out infinite; }
+        .blinking-red { animation: blinkRed 1.5s ease-in-out infinite; }
+        
+        .vs-divider {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+            position: relative;
+        }
+        
+        .vs-divider::before {
+            content: "VS";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 18px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full bg-gradient-to-br from-indigo-600 via-purple-700 to-pink-600 font-sans">
+  <main class="min-h-full p-4"><!-- Title Screen -->
+   <div id="title-screen" class="max-w-6xl mx-auto text-center">
+    <div class="question-card rounded-3xl p-12">
+     <div class="slide-in">
+      <div class="text-9xl mb-8 bounce">
+       ⚔️
+      </div>
+      <h1 class="text-6xl font-bold text-white mb-6 rainbow bg-clip-text text-transparent">Drawing Battle: True or False</h1>
+      <h2 class="text-4xl text-white/90 mb-8 font-semibold"></h2>
+      <p class="text-2xl text-white/80 mb-8 leading-relaxed">🎯 Jadilah yang tercepat menjawab!<br>
+        Gambar simbol ✓ untuk jawaban <strong>benar</strong>!<br>
+        Gambar simbol ✗ untuk jawaban <strong>salah</strong>!</p><!-- Player Names Input -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 max-w-2xl mx-auto">
+       <div class="player-card player1-card rounded-2xl p-6">
+        <h3 class="text-blue-300 font-bold text-xl mb-4">👤 Pemain 1 (Kiri)</h3><input type="text" id="player1-name" placeholder="Masukkan namamu di sini" class="w-full px-4 py-3 rounded-xl bg-white/20 text-white placeholder-white/60 border-2 border-white/30 focus:border-blue-400 focus:outline-none">
+       </div>
+       <div class="player-card player2-card rounded-2xl p-6">
+        <h3 class="text-red-300 font-bold text-xl mb-4">👤 Pemain 2 (Kanan)</h3><input type="text" id="player2-name" placeholder="Masukkan namamu di sini" class="w-full px-4 py-3 rounded-xl bg-white/20 text-white placeholder-white/60 border-2 border-white/30 focus:border-red-400 focus:outline-none">
+       </div>
+      </div><button onclick="startVersusGame()" class="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-16 py-6 rounded-3xl font-bold text-2xl hover:from-purple-600 hover:to-pink-700 transition-all duration-300 transform hover:scale-105 shadow-2xl pulse"> ⚔️ Mulai Pertarungan! </button>
+     </div>
+    </div>
+	<<footer>Dibuat oleh:<br>
+	<b>Dede Ardi Hikmatulloh, S.Th.I</b><br>
+	© 2025 – Portal PAI Dasar</footer>
+   </div><!-- Game Screen -->
+   <div id="game-screen" class="max-w-7xl mx-auto" style="display: none;"><!-- Score & Progress Bar -->
+    <div class="grid grid-cols-3 gap-4 mb-6 slide-in"><!-- Player 1 Score -->
+     <div class="player-card player1-card rounded-3xl px-6 py-4 text-center">
+      <div class="text-blue-300 font-bold text-lg" id="player1-display">
+       Pemain 1
+      </div>
+      <div class="text-white font-bold text-2xl">
+       🏆 <span id="score1" class="text-blue-300">0</span>
+      </div>
+     </div><!-- Progress -->
+     <div class="progress-container rounded-3xl px-6 py-4 text-white font-semibold text-center">
+      <div class="text-base mb-2">
+       Soal <span id="current-q" class="font-bold text-yellow-300">1</span> dari <span id="total-q" class="font-bold text-yellow-300">10</span>
+      </div>
+      <div class="bg-white/20 rounded-full h-2 overflow-hidden">
+       <div id="progress-bar" class="rainbow h-full transition-all duration-1000 ease-out" style="width: 10%"></div>
+      </div>
+     </div><!-- Player 2 Score -->
+     <div class="player-card player2-card rounded-3xl px-6 py-4 text-center">
+      <div class="text-red-300 font-bold text-lg" id="player2-display">
+       Pemain 2
+      </div>
+      <div class="text-white font-bold text-2xl">
+       🏆 <span id="score2" class="text-red-300">0</span>
+      </div>
+     </div>
+    </div><!-- Question -->
+    <div class="question-card rounded-3xl p-8 mb-6 text-center slide-in">
+     <div class="text-4xl mb-4">
+      ❓
+     </div>
+     <h2 id="statement" class="text-white text-2xl font-bold leading-relaxed mb-6">Nabi Muhammad SAW lahir pada tahun Gajah.</h2>
+     <div class="text-white/80 text-lg">
+      ⏱️ Pemain tercepat dengan jawaban benar akan mendapat poin bonus!
+     </div>
+    </div><!-- Versus Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 slide-in relative"><!-- Player 1 Area -->
+     <div class="player-card player1-card rounded-3xl p-6">
+      <h3 class="text-blue-300 text-xl font-bold mb-4 text-center"><span id="player1-name-display">Pemain 1</span> 👈</h3>
+      <canvas id="canvas1" class="drawing-canvas rounded-2xl mx-auto block mb-4" width="300" height="250">
+      </canvas>
+      <div id="feedback1" class="question-card rounded-2xl px-4 py-3 text-white font-bold text-center min-h-[50px] flex items-center justify-center mb-4"><span class="blinking-yellow">Mendeteksi jawaban...</span>
+      </div><button onclick="clearCanvas(1)" class="control-button text-white px-4 py-2 rounded-xl font-bold w-full hover:scale-105 transition-transform"> 🗑️ Hapus </button>
+     </div><!-- Player 2 Area -->
+     <div class="player-card player2-card rounded-3xl p-6">
+      <h3 class="text-red-300 text-xl font-bold mb-4 text-center">👉 <span id="player2-name-display">Pemain 2</span></h3>
+      <canvas id="canvas2" class="drawing-canvas rounded-2xl mx-auto block mb-4" width="300" height="250">
+      </canvas>
+      <div id="feedback2" class="question-card rounded-2xl px-4 py-3 text-white font-bold text-center min-h-[50px] flex items-center justify-center mb-4"><span class="blinking-yellow">Mendeteksi jawaban...</span>
+      </div><button onclick="clearCanvas(2)" class="control-button text-white px-4 py-2 rounded-xl font-bold w-full hover:scale-105 transition-transform"> 🗑️ Hapus </button>
+     </div>
+    </div>
+   </div>
+   <!-- Modal Impor Soal -->
+<div id="importQuestionsModal" style="display:none;position:fixed;z-index:99999;top:0;left:0;width:133vw;height:133vh;background:rgba(5,9,23,0.97);align-items:center;justify-content:center;">
+  <div style="background:#232749;color:#fff;padding:22px 13px 13px 13px;border-radius:14px;min-width:340px;max-width:98vw;max-height:150vh;overflow-y:auto;box-shadow:0 7px 22px #0007;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <h2 style="font-size:23px;margin:0 0 10px 0;">Edit Soal</h2>
+      <button onclick="closeImportQuestionsModal()" style="background:transparent;color:#ff4757;font-weight:bold;border:none;font-size:26px;cursor:pointer">X</button>
+    </div>
+    <div style="font-size:15px;margin-bottom:7px;color:#feca57">
+      <b>Format:</b><br>
+	     1. Tuliskan pertanyaan di baris pertama!<br> 
+	     2. Tuliskan empat buah pilihan jawaban di bawahnya!<br> 
+		 3. Tandai jawaban benar dengan tanda bintang (<code>*</code>)!<br> 
+		 4. Pisahkan pertanyaan berikutnya dengan baris kosong!<br>
+    </div>
+    <textarea id="importQuestionsTextarea"
+      style="width:100%;height:190px;border-radius:7px;font-size:15px;margin-bottom:11px;padding:7px 3px;
+      border:0px solid #333; color:#1565c0; background:#f5f7fa;"></textarea>
+    <div>
+      <button onclick="parseImportedQuestions()" style="background:#feca57;color:#222;font-weight:bold;border:none;border-radius:7px;font-size:16px;padding:8px 26px 8px 26px;box-shadow:0 3px 9px #1112;">Impor Soal</button>
+      <button onclick="closeImportQuestionsModal()" style="background:#bbb;color:#232749;border:none;border-radius:7px;font-size:16px;padding:8px 19px;margin-left:11px;">Batal</button>
+    </div>
+    <div style="font-size:13px;color:#b3b4bd;margin-top:13px;border-top:1px solid #434353;padding-top:12px">
+      <b>Contoh:</b><br>
+      <code>
+        Apa arti puasa?<br>
+        *Menahan diri<br>
+        Berpasrah`<br>
+        Melarang<br>
+        Patuh<br><br>
+
+        Puasa wajib dilaksanakan pada Bulan...<br>
+        Sya'ban<br>
+        *Ramadhan<br>
+        Rajab<br>
+        Syawal<br><br>
+		<i>Catatan: Pertanyaan dan jawaban hanya dapat berupa teks,<br> 
+		tidak mendukung gambar, video, atau audio.</i>
+      </code>
+    </div>
+  </div>
+</div>
+<!-- Tombol Import di kanan atas -->
+<button id="importQuestionBtn"
+  style="position:fixed;top:50px;right:50px;z-index:5001;background:#00b894;color:#fff;border:none;border-radius:11px;font-size:15px;padding:10px 23px;font-weight:bold;box-shadow:0 4px 16px #0003;cursor:pointer;opacity:0.93;">Impor Soal</button>
+  </main>
+  <script>
+        let player1Score = 0;
+        let player2Score = 0;
+        let currentQuestion = 0;
+        let roundFinished = false;
+        let player1Answered = false;
+        let player2Answered = false;
+        let canvas1, ctx1, canvas2, ctx2;
+        let isDrawing1 = false, isDrawing2 = false;
+        let lastX1 = 0, lastY1 = 0, lastX2 = 0, lastY2 = 0;
+        let drawnPaths1 = [], drawnPaths2 = [];
+        let player1Name = "Pemain 1";
+        let player2Name = "Pemain 2";
+        
+        const allQuestions = [
+            // Kelahiran Nabi Muhammad Saw.
+            { statement: "Nabi Muhammad Saw. lahir pada Tahun Gajah.", isTrue: true },
+            { statement: "Nabi Muhammad Saw. lahir di Kota Madinah.", isTrue: false },
+            { statement: "Ayah Nabi Muhammad Saw. bernama Abdullah.", isTrue: true },
+            { statement: "Ayah Nabi Muhammad Saw. bernama Abu Bakar.", isTrue: false },
+            { statement: "Ibu Nabi Muhammad Saw. bernama Aminah.", isTrue: true },
+            { statement: "Ibu Nabi Muhammad Saw. bernama Khadijah.", isTrue: false },
+            { statement: "Nabi Muhammad Saw. lahir pada Bulan Rabiul Awwal.", isTrue: true },
+            { statement: "Nabi Muhammad Saw. lahir pada Bulan Ramadhan.", isTrue: false },
+            { statement: "Kakek Nabi Muhammad Saw. bernama Abdul Muthalib.", isTrue: true },
+            { statement: "Kakek Nabi Muhammad Saw. bernama Abu Thalib.", isTrue: false },
+            
+            // Masa Kecil
+            { statement: "Semasa kecil, Nabi Muhammad Saw. diasuh oleh Halimah As-Sa'diyah.", isTrue: true },
+            { statement: "Halimah As-Sa'diyah adalah bibi Nabi Muhammad Saw.", isTrue: false },
+            { statement: "Nabi Muhammad Saw. menjadi yatim saat berusia 6 tahun.", isTrue: true },
+            { statement: "Nabi Muhammad Saw. menjadi yatim piatu sejak lahir.", isTrue: false },
+            { statement: "Setelah ibunda beliau meninggal, Nabi Muhammad Saw. diasuh oleh kakeknya.", isTrue: true },
+            { statement: "Setelah ibunda beliau meninggal, Nabi Muhammad Saw. diasuh oleh pamannya.", isTrue: false },
+            { statement: "Abdul Muthalib meninggal saat Nabi Muhammad Saw. berusia 8 tahun.", isTrue: true },
+            { statement: "Abdul Muthalib meninggal saat Nabi Muhammad Saw. berusia 15 tahun.", isTrue: false },
+            { statement: "Setelah kakek beliau meninggal, Abu Thalib yang mengasuh Nabi Muhammad Saw.", isTrue: true },
+            { statement: "Setelah kakek meninggal, Abu Abbas yang mengasuh Nabi Muhammad Saw.", isTrue: false },
+            
+            // Masa Remaja
+            { statement: "Nabi Muhammad Saw. dikenal dengan sebutan Al-Amin.", isTrue: true },
+            { statement: "Nabi Muhammad Saw. dikenal dengan sebutan Al-Faruq.", isTrue: false },
+            { statement: "Al-Amin artinya yang orang dapat dipercaya.", isTrue: true },
+            { statement: "Al-Amin artinya yang orang yang pemberani.", isTrue: false },
+            { statement: "Nabi Muhammad Saw. bekerja sebagai pedagang.", isTrue: true },
+            { statement: "Nabi Muhammad Saw. bekerja sebagai prajurit.", isTrue: false },
+            { statement: "Nabi Muhammad Saw. sering berdagang ke Negeri Syam.", isTrue: true },
+            { statement: "Nabi Muhammad Saw. sering berdagang ke Negeri Mesir.", isTrue: false },
+            { statement: "Nama 'Muhammad' berarti orang yang terpuji.", isTrue: true },
+            { statement: "Masyarakat Arab Pra-Islam sangat memuliakan perempuan.", isTrue: false },
+            { statement: "Suku Quraisy merupakan penjaga Ka'bah.", isTrue: true },
+            { statement: "Keluarga Nabi Muhammad Saw. berasal dari Bani Abbasiyah.", isTrue: false },
+            { statement: "Nabi Muhammad Saw. berasal dari Bani Hasyim.", isTrue: true },
+            { statement: "Nabi Muhammad Saw. dilahirkan hari Jumat.", isTrue: false },
+            
+            // Sifat dan Karakter
+            { statement: "Nabi Muhammad Saw. tidak pernah menyembah berhala.", isTrue: true },
+            { statement: "Nabi Muhammad Saw. pernah menyembah berhala sebelum menjadi nabi.", isTrue: false },
+            { statement: "Nabi Muhammad Saw. sering menyendiri di Gua Hira.", isTrue: true },
+            { statement: "Nabi Muhammad Saw. sering menyendiri di Gua Tsur.", isTrue: false },
+            { statement: "Nabi Muhammad Saw. dikenal jujur dalam berdagang.", isTrue: true },
+            { statement: "Nabi Muhammad Saw. pernah menipu dalam berdagang.", isTrue: false },
+            { statement: "Nabi Muhammad Saw. suka menolong orang yang kesusahan.", isTrue: true },
+            { statement: "Nabi Muhammad Saw. hanya menolong keluarganya saja.", isTrue: false },
+            
+            // Keluarga dan Keturunan
+            { statement: ".", isTrue: true },
+            { statement: "Nabi Muhammad Saw. memiliki anak perempuan bernama Aisyah.", isTrue: false },
+            { statement: "Nabi Muhammad Saw. memiliki anak laki-laki bernama Ibrahim.", isTrue: true },
+            { statement: "Nabi Muhammad Saw. memiliki anak laki-laki bernama Ali.", isTrue: false },
+            { statement: "Zainab adalah putri Nabi Muhammad Saw.", isTrue: true },
+            { statement: "Hafshah adalah putri Nabi Muhammad Saw.", isTrue: false },
+            { statement: "Ruqayyah adalah putri Nabi Muhammad Saw.", isTrue: true },
+            { statement: "Ummu Kultsum adalah putri Nabi Muhammad Saw.", isTrue: true },
+            { statement: "Nabi Muhammad Saw. memiliki 4 anak perempuan.", isTrue: true },
+            { statement: "Nabi Muhammad Saw. memiliki 3 anak perempuan.", isTrue: false },
+            
+            // Peristiwa Penting
+            { statement: "Masyarakat Arab Pra-Islam terdiri dari banyak suku yang bermusuhan.", isTrue: true },
+            { statement: "Masyarakat Arab tidak menyukai syair.", isTrue: false },
+            { statement: "Pada masa Jahiliyah, masyarakat Arab menyembah berhala.", isTrue: true },
+            { statement: "Ka'bah dibangun oleh Nabi Muhammad Saw. dengan para sahabat.", isTrue: false },
+            { statement: "Sebelum datangnya Islam, masyarakat Arab berada pada masa Jahiliyah.", isTrue: true },
+            { statement: "Kegiatan ekonomi utama masyarakat Arab sebelum Islam adalah berburu.", isTrue: false }
+        ];
+        
+        let questions = [];
+        
+        function selectRandomQuestions() {
+            const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
+            questions = shuffled.slice(0, 10);
+        }
+
+        // Default config for Element SDK
+        const defaultConfig = {
+            quiz_title: "⚔️ Drawing Quiz Versus",
+            instruction_text: "Dua pemain berkompetisi menggambar jawaban!",
+            welcome_message: "Selamat datang di mode versus yang seru!",
+            player1_name: "Pemain 1",
+            player2_name: "Pemain 2"
+        };
+
+        function initCanvases() {
+            // Canvas 1
+            canvas1 = document.getElementById('canvas1');
+            ctx1 = canvas1.getContext('2d');
+            ctx1.strokeStyle = '#3b82f6';
+            ctx1.lineWidth = 3;
+            ctx1.lineCap = 'round';
+            ctx1.lineJoin = 'round';
+            
+            // Canvas 2
+            canvas2 = document.getElementById('canvas2');
+            ctx2 = canvas2.getContext('2d');
+            ctx2.strokeStyle = '#ef4444';
+            ctx2.lineWidth = 3;
+            ctx2.lineCap = 'round';
+            ctx2.lineJoin = 'round';
+            
+            // Mouse events for Canvas 1
+            canvas1.addEventListener('mousedown', (e) => startDrawing(1, e));
+            canvas1.addEventListener('mousemove', (e) => draw(1, e));
+            canvas1.addEventListener('mouseup', () => stopDrawing(1));
+            canvas1.addEventListener('mouseout', () => stopDrawing(1));
+            
+            // Mouse events for Canvas 2
+            canvas2.addEventListener('mousedown', (e) => startDrawing(2, e));
+            canvas2.addEventListener('mousemove', (e) => draw(2, e));
+            canvas2.addEventListener('mouseup', () => stopDrawing(2));
+            canvas2.addEventListener('mouseout', () => stopDrawing(2));
+            
+            // Touch events
+            canvas1.addEventListener('touchstart', (e) => handleTouch(1, e));
+            canvas1.addEventListener('touchmove', (e) => handleTouch(1, e));
+            canvas1.addEventListener('touchend', () => stopDrawing(1));
+            
+            canvas2.addEventListener('touchstart', (e) => handleTouch(2, e));
+            canvas2.addEventListener('touchmove', (e) => handleTouch(2, e));
+            canvas2.addEventListener('touchend', () => stopDrawing(2));
+            
+            canvas1.classList.add('active');
+            canvas2.classList.add('active');
+        }
+        
+        function handleTouch(player, e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const canvas = player === 1 ? canvas1 : canvas2;
+            const rect = canvas.getBoundingClientRect();
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+            
+            if (e.type === 'touchstart') {
+                startDrawing(player, { offsetX: x, offsetY: y });
+            } else if (e.type === 'touchmove') {
+                draw(player, { offsetX: x, offsetY: y });
+            }
+        }
+        
+        function startDrawing(player, e) {
+            if (roundFinished) return;
+            if (player === 1 && player1Answered) return;
+            if (player === 2 && player2Answered) return;
+            
+            if (player === 1) {
+                isDrawing1 = true;
+                lastX1 = e.offsetX;
+                lastY1 = e.offsetY;
+                drawnPaths1.push([{ x: lastX1, y: lastY1 }]);
+            } else {
+                isDrawing2 = true;
+                lastX2 = e.offsetX;
+                lastY2 = e.offsetY;
+                drawnPaths2.push([{ x: lastX2, y: lastY2 }]);
+            }
+        }
+        
+        function draw(player, e) {
+            if (roundFinished) return;
+            if (player === 1 && (!isDrawing1 || player1Answered)) return;
+            if (player === 2 && (!isDrawing2 || player2Answered)) return;
+            
+            const canvas = player === 1 ? canvas1 : canvas2;
+            const ctx = player === 1 ? ctx1 : ctx2;
+            
+            if (player === 1) {
+                ctx.beginPath();
+                ctx.moveTo(lastX1, lastY1);
+                ctx.lineTo(e.offsetX, e.offsetY);
+                ctx.stroke();
+                
+                const currentPath = drawnPaths1[drawnPaths1.length - 1];
+                currentPath.push({ x: e.offsetX, y: e.offsetY });
+                
+                lastX1 = e.offsetX;
+                lastY1 = e.offsetY;
+                
+                detectShapeRealTime(1);
+            } else {
+                ctx.beginPath();
+                ctx.moveTo(lastX2, lastY2);
+                ctx.lineTo(e.offsetX, e.offsetY);
+                ctx.stroke();
+                
+                const currentPath = drawnPaths2[drawnPaths2.length - 1];
+                currentPath.push({ x: e.offsetX, y: e.offsetY });
+                
+                lastX2 = e.offsetX;
+                lastY2 = e.offsetY;
+                
+                detectShapeRealTime(2);
+            }
+        }
+        
+        function stopDrawing(player) {
+            if (player === 1) {
+                isDrawing1 = false;
+            } else {
+                isDrawing2 = false;
+            }
+        }
+        
+        function clearCanvas(player) {
+            if (roundFinished) return;
+            if (player === 1 && player1Answered) return;
+            if (player === 2 && player2Answered) return;
+            
+            const canvas = player === 1 ? canvas1 : canvas2;
+            const ctx = player === 1 ? ctx1 : ctx2;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (player === 1) {
+                drawnPaths1 = [];
+            } else {
+                drawnPaths2 = [];
+            }
+        }
+        
+        let detectionTimeout1 = null;
+        let detectionTimeout2 = null;
+        
+        function detectShapeRealTime(player) {
+            if (roundFinished) return;
+            if (player === 1 && player1Answered) return;
+            if (player === 2 && player2Answered) return;
+            
+            const paths = player === 1 ? drawnPaths1 : drawnPaths2;
+            if (paths.length === 0) return;
+            
+            const detectedShape = analyzeDrawing(player);
+            
+            if (detectedShape === 'checkmark' || detectedShape === 'cross') {
+                const timeout = player === 1 ? detectionTimeout1 : detectionTimeout2;
+                if (timeout) {
+                    clearTimeout(timeout);
+                }
+                
+                const newTimeout = setTimeout(() => {
+                    if (!roundFinished && analyzeDrawing(player) === detectedShape) {
+                        if (player === 1 && !player1Answered) {
+                            handleAnswer(1, detectedShape);
+                        } else if (player === 2 && !player2Answered) {
+                            handleAnswer(2, detectedShape);
+                        }
+                    }
+                }, 2000);
+                
+                if (player === 1) {
+                    detectionTimeout1 = newTimeout;
+                } else {
+                    detectionTimeout2 = newTimeout;
+                }
+            }
+        }
+        
+        function analyzeDrawing(player) {
+            const paths = player === 1 ? drawnPaths1 : drawnPaths2;
+            if (paths.length === 0) return 'unknown';
+            
+            let allPoints = [];
+            paths.forEach(path => {
+                allPoints = allPoints.concat(path);
+            });
+            
+            if (allPoints.length < 8) return 'unknown';
+            
+            const minX = Math.min(...allPoints.map(p => p.x));
+            const maxX = Math.max(...allPoints.map(p => p.x));
+            const minY = Math.min(...allPoints.map(p => p.y));
+            const maxY = Math.max(...allPoints.map(p => p.y));
+            
+            const width = maxX - minX;
+            const height = maxY - minY;
+            const centerX = (minX + maxX) / 2;
+            const centerY = (minY + maxY) / 2;
+            
+            if (width < 25 || height < 25) return 'unknown';
+            
+            const checkmarkScore = analyzeCheckmark(allPoints, minX, maxX, minY, maxY);
+            const crossScore = analyzeCross(allPoints, minX, maxX, minY, maxY, centerX, centerY);
+            
+            if (checkmarkScore > 0.25) {
+                return 'checkmark';
+            } else if (crossScore > 0.35) {
+                return 'cross';
+            }
+            
+            return 'unknown';
+        }
+        
+        function analyzeCheckmark(points, minX, maxX, minY, maxY) {
+            const width = maxX - minX;
+            const midX = (minX + maxX) / 2;
+            const leftPoints = points.filter(p => p.x <= midX);
+            const rightPoints = points.filter(p => p.x >= midX);
+            
+            if (leftPoints.length < 2 || rightPoints.length < 2) return 0;
+            
+            let leftDownwardTrend = 0;
+            let rightUpwardTrend = 0;
+            
+            for (let i = 1; i < leftPoints.length; i++) {
+                if (leftPoints[i].y > leftPoints[i-1].y && leftPoints[i].x >= leftPoints[i-1].x) {
+                    leftDownwardTrend++;
+                }
+            }
+            
+            for (let i = 1; i < rightPoints.length; i++) {
+                if (rightPoints[i].y < rightPoints[i-1].y && rightPoints[i].x >= rightPoints[i-1].x) {
+                    rightUpwardTrend++;
+                }
+            }
+            
+            const leftScore = leftDownwardTrend / Math.max(leftPoints.length - 1, 1);
+            const rightScore = rightUpwardTrend / Math.max(rightPoints.length - 1, 1);
+            
+            const lowestPoint = points.reduce((lowest, point) => 
+                point.y > lowest.y ? point : lowest
+            );
+            
+            const junctionScore = (lowestPoint.x > minX + width * 0.2 && 
+                                 lowestPoint.x < minX + width * 0.8) ? 0.2 : 0;
+            
+            return (leftScore + rightScore) / 2 + junctionScore;
+        }
+        
+        function analyzeCross(points, minX, maxX, minY, maxY, centerX, centerY) {
+            const topLeft = points.filter(p => p.x < centerX && p.y < centerY);
+            const topRight = points.filter(p => p.x > centerX && p.y < centerY);
+            const bottomLeft = points.filter(p => p.x < centerX && p.y > centerY);
+            const bottomRight = points.filter(p => p.x > centerX && p.y > centerY);
+            
+            const hasTopLeftBottomRight = topLeft.length > 0 && bottomRight.length > 0;
+            const hasTopRightBottomLeft = topRight.length > 0 && bottomLeft.length > 0;
+            
+            if (!hasTopLeftBottomRight && !hasTopRightBottomLeft) return 0;
+            
+            let diagonalScore = 0;
+            
+            if (hasTopLeftBottomRight) {
+                const diagonal1Points = [...topLeft, ...bottomRight].sort((a, b) => a.x - b.x);
+                let diagonal1Trend = 0;
+                
+                for (let i = 1; i < diagonal1Points.length; i++) {
+                    const slope = (diagonal1Points[i].y - diagonal1Points[i-1].y) / 
+                                 (diagonal1Points[i].x - diagonal1Points[i-1].x);
+                    if (slope > 0) diagonal1Trend++;
+                }
+                
+                diagonalScore += diagonal1Trend / Math.max(diagonal1Points.length - 1, 1);
+            }
+            
+            if (hasTopRightBottomLeft) {
+                const diagonal2Points = [...topRight, ...bottomLeft].sort((a, b) => a.x - b.x);
+                let diagonal2Trend = 0;
+                
+                for (let i = 1; i < diagonal2Points.length; i++) {
+                    const slope = (diagonal2Points[i].y - diagonal2Points[i-1].y) / 
+                                 (diagonal2Points[i].x - diagonal2Points[i-1].x);
+                    if (slope < 0) diagonal2Trend++;
+                }
+                
+                diagonalScore += diagonal2Trend / Math.max(diagonal2Points.length - 1, 1);
+            }
+            
+            return diagonalScore / 2;
+        }
+        
+        function handleAnswer(player, shape) {
+            if (roundFinished) return;
+            if (player === 1 && player1Answered) return;
+            if (player === 2 && player2Answered) return;
+            
+            const currentQ = questions[currentQuestion];
+            const userAnswer = shape === 'checkmark';
+            const isCorrect = userAnswer === currentQ.isTrue;
+            
+            const canvas = player === 1 ? canvas1 : canvas2;
+            const feedback = document.getElementById(`feedback${player}`);
+            
+            // Mark player as answered
+            if (player === 1) {
+                player1Answered = true;
+            } else {
+                player2Answered = true;
+            }
+            
+            // Disable canvas
+            canvas.style.pointerEvents = 'none';
+            canvas.classList.remove('active');
+            
+            if (isCorrect) {
+                canvas.classList.add('correct');
+                feedback.innerHTML = '<span class="blinking-green">🎉 Benar!</span>';
+                feedback.classList.add('bounce');
+                
+                // Award points - first to answer correctly gets more points
+                let points = 10;
+                if ((player === 1 && !player2Answered) || (player === 2 && !player1Answered)) {
+                    // First to answer correctly gets bonus
+                    points = 15;
+                }
+                
+                if (player === 1) {
+                    player1Score += points;
+                    document.getElementById('score1').textContent = player1Score;
+                    document.getElementById('score1').parentElement.classList.add('bounce');
+                } else {
+                    player2Score += points;
+                    document.getElementById('score2').textContent = player2Score;
+                    document.getElementById('score2').parentElement.classList.add('bounce');
+                }
+                
+                createConfetti();
+                
+            } else {
+                canvas.classList.add('incorrect');
+                feedback.innerHTML = '<span class="blinking-red">❌ Salah!</span>';
+                feedback.classList.add('shake');
+            }
+            
+            // Check if both players answered
+            if (player1Answered && player2Answered) {
+                roundFinished = true;
+                setTimeout(() => {
+                    nextQuestion();
+                }, 2500);
+            } else {
+                // Wait for the other player (max 6 seconds)
+                setTimeout(() => {
+                    if (!roundFinished && (player1Answered || player2Answered)) {
+                        // Mark the other player as "no answer" and continue
+                        if (!player1Answered) {
+                            document.getElementById('feedback1').innerHTML = '<span class="text-gray-400">⏰ Waktu habis</span>';
+                            canvas1.style.pointerEvents = 'none';
+                            canvas1.classList.remove('active');
+                        }
+                        if (!player2Answered) {
+                            document.getElementById('feedback2').innerHTML = '<span class="text-gray-400">⏰ Waktu habis</span>';
+                            canvas2.style.pointerEvents = 'none';
+                            canvas2.classList.remove('active');
+                        }
+                        roundFinished = true;
+                        setTimeout(() => {
+                            nextQuestion();
+                        }, 1500);
+                    }
+                }, 6000);
+            }
+        }
+        
+        function createConfetti() {
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#dda0dd'];
+            
+            for (let i = 0; i < 30; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.style.position = 'fixed';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.top = '-10px';
+                    confetti.style.width = '8px';
+                    confetti.style.height = '8px';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.borderRadius = '50%';
+                    confetti.style.pointerEvents = 'none';
+                    confetti.style.zIndex = '9999';
+                    confetti.style.animation = 'fall 2s linear forwards';
+                    
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => {
+                        confetti.remove();
+                    }, 2000);
+                }, i * 30);
+            }
+        }
+        
+        function nextQuestion() {
+            currentQuestion++;
+            
+            if (currentQuestion >= questions.length) {
+                showFinalScore();
+                return;
+            }
+            
+            // Reset for next question
+            roundFinished = false;
+            player1Answered = false;
+            player2Answered = false;
+            
+            // Clear canvas states
+            canvas1.classList.remove('correct', 'incorrect');
+            canvas2.classList.remove('correct', 'incorrect');
+            canvas1.style.pointerEvents = 'auto';
+            canvas2.style.pointerEvents = 'auto';
+            canvas1.classList.add('active');
+            canvas2.classList.add('active');
+            
+            // Clear canvases
+            clearCanvas(1);
+            clearCanvas(2);
+            
+            // Clear feedback
+            document.getElementById('feedback1').innerHTML = '<span class="blinking-yellow">Menunggu...</span>';
+            document.getElementById('feedback2').innerHTML = '<span class="blinking-yellow">Menunggu...</span>';
+            document.getElementById('feedback1').classList.remove('bounce', 'shake');
+            document.getElementById('feedback2').classList.remove('bounce', 'shake');
+            
+            // Clear score animations
+            document.getElementById('score1').parentElement.classList.remove('bounce');
+            document.getElementById('score2').parentElement.classList.remove('bounce');
+            
+            // Load new question
+            setTimeout(() => {
+                loadQuestion();
+                updateProgress();
+            }, 300);
+        }
+        
+        function loadQuestion() {
+            const q = questions[currentQuestion];
+            const statementEl = document.getElementById('statement');
+            statementEl.style.opacity = '0';
+            
+            setTimeout(() => {
+                statementEl.textContent = q.statement;
+                statementEl.style.opacity = '1';
+                statementEl.classList.add('slide-in');
+            }, 150);
+        }
+        
+        function updateProgress() {
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            document.getElementById('progress-bar').style.width = progress + '%';
+            document.getElementById('current-q').textContent = currentQuestion + 1;
+            document.getElementById('total-q').textContent = questions.length;
+        }
+        
+        function showFinalScore() {
+            const main = document.querySelector('main');
+            const winner = player1Score > player2Score ? player1Name : 
+                          player2Score > player1Score ? player2Name : 'SERI';
+            
+            const winnerEmoji = winner === 'SERI' ? '🤝' : '👑';
+            const winnerText = winner === 'SERI' ? 'Hasil Seri!' : `${winner} Menang!`;
+            
+            main.innerHTML = `
+                <div class="max-w-6xl mx-auto text-center">
+                    <div class="question-card rounded-3xl p-12">
+                        <div class="slide-in">
+                            <div class="text-9xl mb-8 bounce">${winnerEmoji}</div>
+                            <h1 class="text-6xl font-bold text-white mb-6 rainbow bg-clip-text text-transparent winner">
+                                ${winnerText}
+                            </h1>
+                            
+                            <!-- Final Scores -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 max-w-4xl mx-auto">
+                                <div class="player-card player1-card rounded-3xl p-8 ${player1Score >= player2Score ? 'winner' : ''}">
+                                    <h3 class="text-blue-300 font-bold text-2xl mb-4">${player1Name}</h3>
+                                    <div class="text-6xl font-bold text-white mb-2">${player1Score}</div>
+                                    <div class="text-blue-300">dari semua soal</div>
+                                </div>
+                                <div class="player-card player2-card rounded-3xl p-8 ${player2Score >= player1Score ? 'winner' : ''}">
+                                    <h3 class="text-red-300 font-bold text-2xl mb-4">${player2Name}</h3>
+                                    <div class="text-6xl font-bold text-white mb-2">${player2Score}</div>
+                                    <div class="text-red-300">dari 100 poin</div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-8">
+                                ${winner !== 'SERI' ? 
+                                    '<p class="text-green-300 font-bold text-3xl">🎉 Selamat untuk pemenang! 🎉</p>' : 
+                                    '<p class="text-yellow-300 font-bold text-3xl">🤝 Permainan yang seru! 🤝</p>'
+                                }
+                            </div>
+                            
+                            <button onclick="location.reload()" 
+                                    class="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-16 py-6 rounded-3xl font-bold text-2xl hover:from-purple-600 hover:to-pink-700 transition-all duration-300 transform hover:scale-105 shadow-2xl">
+                                ⚔️ Main Lagi
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Add celebration confetti
+            setTimeout(() => {
+                createConfetti();
+            }, 500);
+        }
+
+        // Element SDK Implementation
+        async function onConfigChange(config) {
+            const quizTitle = config.quiz_title || defaultConfig.quiz_title;
+            const instructionText = config.instruction_text || defaultConfig.instruction_text;
+            const welcomeMessage = config.welcome_message || defaultConfig.welcome_message;
+            const player1NameConfig = config.player1_name || defaultConfig.player1_name;
+            const player2NameConfig = config.player2_name || defaultConfig.player2_name;
+
+            // Update UI elements if they exist
+            const titleElement = document.getElementById('quiz-title');
+            const instructionElement = document.getElementById('instruction-text');
+            const welcomeElement = document.getElementById('welcome-message');
+
+            if (titleElement) titleElement.textContent = quizTitle;
+            if (instructionElement) instructionElement.textContent = instructionText;
+            if (welcomeElement) welcomeElement.textContent = welcomeMessage;
+            
+            // Update player name inputs
+            const player1Input = document.getElementById('player1-name');
+            const player2Input = document.getElementById('player2-name');
+            if (player1Input) player1Input.placeholder = player1NameConfig;
+            if (player2Input) player2Input.placeholder = player2NameConfig;
+        }
+
+        function mapToCapabilities(config) {
+            return {
+                recolorables: [],
+                borderables: [],
+                fontEditable: undefined,
+                fontSizeable: undefined
+            };
+        }
+
+        function mapToEditPanelValues(config) {
+            return new Map([
+                ["quiz_title", config.quiz_title || defaultConfig.quiz_title],
+                ["instruction_text", config.instruction_text || defaultConfig.instruction_text],
+                ["welcome_message", config.welcome_message || defaultConfig.welcome_message],
+                ["player1_name", config.player1_name || defaultConfig.player1_name],
+                ["player2_name", config.player2_name || defaultConfig.player2_name]
+            ]);
+        }
+
+        // Initialize Element SDK
+        if (window.elementSdk) {
+            window.elementSdk.init({
+                defaultConfig,
+                onConfigChange,
+                mapToCapabilities,
+                mapToEditPanelValues
+            });
+        }
+
+        // Add CSS for confetti animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fall {
+                0% {
+                    transform: translateY(-100vh) rotate(0deg);
+                    opacity: 1;
+                }
+                100% {
+                    transform: translateY(100vh) rotate(360deg);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        function startVersusGame() {
+            // Get player names
+            const player1Input = document.getElementById('player1-name').value.trim();
+            const player2Input = document.getElementById('player2-name').value.trim();
+            
+            player1Name = player1Input || 'Pemain 1';
+            player2Name = player2Input || 'Pemain 2';
+            
+            // Update displays
+            document.getElementById('player1-display').textContent = player1Name;
+            document.getElementById('player2-display').textContent = player2Name;
+            document.getElementById('player1-name-display').textContent = player1Name;
+            document.getElementById('player2-name-display').textContent = player2Name;
+            
+            // Start game
+            document.getElementById('title-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
+            
+            selectRandomQuestions();
+            initCanvases();
+            loadQuestion();
+            updateProgress();
+        }
+
+        // Initialize application
+        document.addEventListener('DOMContentLoaded', function() {
+            // Show title screen first
+        });
+		// TOMBOL BARU
+document.getElementById('importQuestionBtn').onclick = showImportQuestionsModal;
+
+// TAMPILKAN MODAL IMPOR
+function showImportQuestionsModal() {
+    document.getElementById('importQuestionsTextarea').value = '';
+    document.getElementById('importQuestionsModal').style.display = 'flex';
+}
+function closeImportQuestionsModal() {
+    document.getElementById('importQuestionsModal').style.display = 'none';
+}
+
+// PARSE dan IMPOR, format tanpa #
+function parseImportedQuestions() {
+    const txt = document.getElementById('importQuestionsTextarea').value.trim();
+    if (!txt) {
+        alert('Teks soal kosong!');
+        return;
+    }
+
+    // Split by double newlines (or more) to get all question blocks
+    let rawBlocks = txt.split(/\n\s*\n/g).map(b => b.trim()).filter(Boolean);
+    let imported = [];
+
+    for(const block of rawBlocks) {
+        const lines = block.split('\n').map(l=>l.trim()).filter(Boolean);
+        if(lines.length < 3) continue; // 1 pertanyaan + minimal 2 jawaban
+
+        let q = { 
+            question: lines[0],
+            answers: [],
+            correct: 0
+        };
+        for(let i=1;i<lines.length;i++) {
+            let line = lines[i];
+            if(line.startsWith('*')) {
+                line = line.replace(/^\*/, '').trim();
+                q.correct = q.answers.length;
+                q.answers.push(line);
+            } else {
+                q.answers.push(line);
+            }
+        }
+        // Validasi
+        if(q.answers.length >= 2 && typeof q.correct === "number" && q.answers[q.correct]) {
+            imported.push(q);
+        }
+    }
+
+    if(imported.length < 1){
+        alert('Format salah atau tidak ada soal valid!');
+        return;
+    }
+    questions.length = 0;
+    for(let q of imported) questions.push(q);
+    closeImportQuestionsModal();
+    alert('Berhasil mengimpor ' + imported.length + ' soal!\nPastikan soal tersimpan sebelum bermain.');
+}
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99feee19b236e9d3',t:'MTc2MzM3OTM4My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
