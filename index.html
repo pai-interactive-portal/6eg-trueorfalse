@@ -3,13 +3,12 @@
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Drawing Battle</title>
-  <script src="/_sdk/element_sdk.js"></script>
+  <title>Drawing Battle: True or False</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
         body {
             box-sizing: border-box;
-			transform: scale(0.75);
+            transform: scale(0.75);
             transform-origin: top left;
             width: 133.33vw; /* 100vw / 0.75 */
             height: 133.33vh;
@@ -74,13 +73,13 @@
             25% { transform: scale(1.1) rotate(-5deg); }
             75% { transform: scale(1.1) rotate(5deg); }
         }
-		
-		footer {
-           margin-top: 50px;
-		   font-family: 'Arial', sans-serif;
+        
+        footer {
+           margin-top: 30px;
+           font-family: 'Arial', sans-serif;
            font-size: 15px;
-		   color: #ffffff;
-           opacity: 0.5;
+           color: #ffffff;
+           opacity: 0.6;
         }
         
         .pulse { animation: pulse 2s infinite; }
@@ -140,12 +139,6 @@
             border-right: 6px solid #ef4444;
         }
         
-        .score-display {
-            background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 165, 0, 0.2));
-            border: 2px solid rgba(255, 215, 0, 0.5);
-            backdrop-filter: blur(10px);
-        }
-        
         .progress-container {
             background: rgba(255, 255, 255, 0.1);
             border: 2px solid rgba(255, 255, 255, 0.2);
@@ -165,158 +158,176 @@
             border-color: rgba(255,255,255,0.6);
         }
         
+        .mode-btn-active {
+            border-color: #feca57 !important;
+            box-shadow: 0 0 20px rgba(254, 202, 87, 0.6);
+            transform: scale(1.03);
+            background: rgba(254, 202, 87, 0.2);
+        }
+
         .blinking-yellow { animation: blinkYellow 1.5s ease-in-out infinite; }
         .blinking-green { animation: blinkGreen 1.5s ease-in-out infinite; }
         .blinking-red { animation: blinkRed 1.5s ease-in-out infinite; }
-        
-        .vs-divider {
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
-            position: relative;
-        }
-        
-        .vs-divider::before {
-            content: "VS";
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 50%;
-            font-weight: bold;
-            font-size: 18px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
-    </style>
-  <style>@view-transition { navigation: auto; }</style>
-  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  </style>
  </head>
  <body class="h-full bg-gradient-to-br from-indigo-600 via-purple-700 to-pink-600 font-sans">
-  <main class="min-h-full p-4"><!-- Title Screen -->
-   <div id="title-screen" class="max-w-6xl mx-auto text-center">
-    <div class="question-card rounded-3xl p-12">
+  <main class="min-h-full p-4 flex flex-col justify-center">
+    <!-- Title Screen (Compact) -->
+   <div id="title-screen" class="max-w-xl mx-auto text-center w-full justify-center">
+    <div class="question-card rounded-3xl p-8 shadow-2xl border border-white/20">
      <div class="slide-in">
-      <div class="text-9xl mb-8 bounce">
-       ⚔️
-      </div>
-      <h1 class="text-6xl font-bold text-white mb-6 rainbow bg-clip-text text-transparent">Drawing Battle: True or False</h1>
-      <h2 class="text-4xl text-white/90 mb-8 font-semibold"></h2>
-      <p class="text-2xl text-white/80 mb-8 leading-relaxed">🎯 Jadilah yang tercepat menjawab!<br>
+      <div class="text-7xl mb-3 bounce">⚔️</div>
+      <h1 class="text-6xl font-bold text-white mb-2 rainbow bg-clip-text text-transparent">Drawing Battle:</h1>
+	  <h1 class="text-4xl font-bold text-white mb-2 rainbow bg-clip-text text-transparent">"True or False"</h1>
+      <p class="text-xl text-white/80 mb-8 leading-relaxed">🎯 Jadilah yang tercepat menjawab!<br>
         Gambar simbol ✓ untuk jawaban <strong>benar</strong>!<br>
-        Gambar simbol ✗ untuk jawaban <strong>salah</strong>!</p><!-- Player Names Input -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 max-w-2xl mx-auto">
-       <div class="player-card player1-card rounded-2xl p-6">
-        <h3 class="text-blue-300 font-bold text-xl mb-4">👤 Pemain 1 (Kiri)</h3><input type="text" id="player1-name" placeholder="Masukkan namamu di sini" class="w-full px-4 py-3 rounded-xl bg-white/20 text-white placeholder-white/60 border-2 border-white/30 focus:border-blue-400 focus:outline-none">
-       </div>
-       <div class="player-card player2-card rounded-2xl p-6">
-        <h3 class="text-red-300 font-bold text-xl mb-4">👤 Pemain 2 (Kanan)</h3><input type="text" id="player2-name" placeholder="Masukkan namamu di sini" class="w-full px-4 py-3 rounded-xl bg-white/20 text-white placeholder-white/60 border-2 border-white/30 focus:border-red-400 focus:outline-none">
-       </div>
-      </div><button onclick="startVersusGame()" class="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-16 py-6 rounded-3xl font-bold text-2xl hover:from-purple-600 hover:to-pink-700 transition-all duration-300 transform hover:scale-105 shadow-2xl pulse"> ⚔️ Mulai Pertarungan! </button>
+        Gambar simbol ✗ untuk jawaban <strong>salah</strong>!</p>
+		
+      <!-- 1. Pilihan Mode Permainan -->
+      <div class="mb-5">
+        <label class="block text-white/90 font-bold text-xl mb-2 text-center px-1">Mode Permainan:</label>
+        <div class="grid grid-cols-2 gap-3">
+            <button id="mode-single-btn" onclick="selectMode('single')" class="control-button mode-btn-active text-white py-3 px-4 rounded-xl font-bold text-xl flex items-center justify-center gap-2">
+                👤 Tunggal
+            </button>
+            <button id="mode-versus-btn" onclick="selectMode('versus')" class="control-button text-white py-3 px-4 rounded-xl font-bold text-xl flex items-center justify-center gap-2">
+                ⚔️ Tanding
+            </button>
+        </div>
+      </div>
+
+      <!-- 2. Menu Impor Soal -->
+      <div class="mb-6">
+        <button onclick="openImportModal()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-all transform hover:scale-101 flex items-center justify-center gap-2 border border-emerald-300/40 text-xl">
+            📥 Impor Soal<span id="imported-count-badge" class="bg-white/20 px-2 py-0.5 rounded-full text-xs" style="display:none">0 soal</span>
+        </button>
+      </div>
+
+      <!-- 3. Tombol Membuka Modal Nama Pemain & Mulai Game -->
+      <button onclick="openPlayerNameModal()" class="w-full bg-gradient-to-r from-purple-500 to-pink-600 text-white py-4 rounded-2xl font-bold text-xl hover:from-purple-600 hover:to-pink-700 transition-all duration-300 transform hover:scale-102 shadow-xl pulse">
+        🚀 Lanjut
+      </button>
+
      </div>
     </div>
-	<<footer>Dibuat oleh:<br>
+	<footer>Dibuat oleh:<br>
 	<b>Dede Ardi Hikmatulloh, S.Th.I</b><br>
 	© 2025 – Portal PAI Dasar</footer>
-   </div><!-- Game Screen -->
-   <div id="game-screen" class="max-w-7xl mx-auto" style="display: none;"><!-- Score & Progress Bar -->
-    <div class="grid grid-cols-3 gap-4 mb-6 slide-in"><!-- Player 1 Score -->
-     <div class="player-card player1-card rounded-3xl px-6 py-4 text-center">
-      <div class="text-blue-300 font-bold text-lg" id="player1-display">
-       Pemain 1
-      </div>
+   </div>
+   
+   <!-- Game Screen -->
+   <div id="game-screen" class="max-w-7xl mx-auto w-full" style="display: none;">
+    <!-- Score & Progress Bar -->
+    <div id="scoreboard-container" class="flex justify-between items-center gap-4 mb-6 slide-in">
+     <!-- Player 1 Score -->
+     <div id="player1-score-card" class="player-card player1-card rounded-3xl px-6 py-4 text-center flex-1 max-w-[250px]">
+      <div class="text-blue-300 font-bold text-lg" id="player1-display">Pemain 1</div>
       <div class="text-white font-bold text-2xl">
        🏆 <span id="score1" class="text-blue-300">0</span>
       </div>
-     </div><!-- Progress -->
-     <div class="progress-container rounded-3xl px-6 py-4 text-white font-semibold text-center">
+     </div>
+     
+     <!-- Progress -->
+     <div class="progress-container rounded-3xl px-6 py-4 text-white font-semibold text-center flex-1 max-w-[400px]">
       <div class="text-base mb-2">
        Soal <span id="current-q" class="font-bold text-yellow-300">1</span> dari <span id="total-q" class="font-bold text-yellow-300">10</span>
       </div>
       <div class="bg-white/20 rounded-full h-2 overflow-hidden">
        <div id="progress-bar" class="rainbow h-full transition-all duration-1000 ease-out" style="width: 10%"></div>
       </div>
-     </div><!-- Player 2 Score -->
-     <div class="player-card player2-card rounded-3xl px-6 py-4 text-center">
-      <div class="text-red-300 font-bold text-lg" id="player2-display">
-       Pemain 2
-      </div>
+     </div>
+     
+     <!-- Player 2 Score -->
+     <div id="player2-score-card" class="player-card player2-card rounded-3xl px-6 py-4 text-center flex-1 max-w-[250px]">
+      <div class="text-red-300 font-bold text-lg" id="player2-display">Pemain 2</div>
       <div class="text-white font-bold text-2xl">
        🏆 <span id="score2" class="text-red-300">0</span>
       </div>
      </div>
-    </div><!-- Question -->
+    </div>
+    
+    <!-- Question -->
     <div class="question-card rounded-3xl p-8 mb-6 text-center slide-in">
-     <div class="text-4xl mb-4">
-      ❓
-     </div>
-     <h2 id="statement" class="text-white text-2xl font-bold leading-relaxed mb-6">Nabi Muhammad SAW lahir pada tahun Gajah.</h2>
-     <div class="text-white/80 text-lg">
+     <div class="text-4xl mb-4">❓</div>
+     <h2 id="statement" class="text-white text-2xl font-bold leading-relaxed mb-6">Pernyataan...</h2>
+     <div id="question-hint" class="text-white/80 text-lg">
       ⏱️ Pemain tercepat dengan jawaban benar akan mendapat poin bonus!
      </div>
-    </div><!-- Versus Layout -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 slide-in relative"><!-- Player 1 Area -->
-     <div class="player-card player1-card rounded-3xl p-6">
-      <h3 class="text-blue-300 text-xl font-bold mb-4 text-center"><span id="player1-name-display">Pemain 1</span> 👈</h3>
-      <canvas id="canvas1" class="drawing-canvas rounded-2xl mx-auto block mb-4" width="300" height="250">
-      </canvas>
-      <div id="feedback1" class="question-card rounded-2xl px-4 py-3 text-white font-bold text-center min-h-[50px] flex items-center justify-center mb-4"><span class="blinking-yellow">Mendeteksi jawaban...</span>
-      </div><button onclick="clearCanvas(1)" class="control-button text-white px-4 py-2 rounded-xl font-bold w-full hover:scale-105 transition-transform"> 🗑️ Hapus </button>
-     </div><!-- Player 2 Area -->
-     <div class="player-card player2-card rounded-3xl p-6">
-      <h3 class="text-red-300 text-xl font-bold mb-4 text-center">👉 <span id="player2-name-display">Pemain 2</span></h3>
-      <canvas id="canvas2" class="drawing-canvas rounded-2xl mx-auto block mb-4" width="300" height="250">
-      </canvas>
-      <div id="feedback2" class="question-card rounded-2xl px-4 py-3 text-white font-bold text-center min-h-[50px] flex items-center justify-center mb-4"><span class="blinking-yellow">Mendeteksi jawaban...</span>
-      </div><button onclick="clearCanvas(2)" class="control-button text-white px-4 py-2 rounded-xl font-bold w-full hover:scale-105 transition-transform"> 🗑️ Hapus </button>
+    </div>
+    
+    <!-- Canvas Layout -->
+    <div id="canvas-container" class="grid grid-cols-1 lg:grid-cols-2 gap-8 slide-in relative justify-items-center">
+     <!-- Player 1 Area -->
+     <div id="player1-canvas-card" class="player-card player1-card rounded-3xl p-6 w-full max-w-lg">
+      <h3 class="text-blue-300 text-xl font-bold mb-4 text-center"><span id="player1-name-display">Pemain 1</span></h3>
+      <canvas id="canvas1" class="drawing-canvas rounded-2xl mx-auto block mb-4" width="300" height="250"></canvas>
+      <div id="feedback1" class="question-card rounded-2xl px-4 py-3 text-white font-bold text-center min-h-[50px] flex items-center justify-center mb-4"><span class="blinking-yellow">Mendeteksi jawaban...</span></div>
+      <button onclick="clearCanvas(1)" class="control-button text-white px-4 py-2 rounded-xl font-bold w-full hover:scale-105 transition-transform"> 🗑️ Hapus </button>
+     </div>
+     
+     <!-- Player 2 Area -->
+     <div id="player2-canvas-card" class="player-card player2-card rounded-3xl p-6 w-full max-w-lg">
+      <h3 class="text-red-300 text-xl font-bold mb-4 text-center"><span id="player2-name-display">Pemain 2</span></h3>
+      <canvas id="canvas2" class="drawing-canvas rounded-2xl mx-auto block mb-4" width="300" height="250"></canvas>
+      <div id="feedback2" class="question-card rounded-2xl px-4 py-3 text-white font-bold text-center min-h-[50px] flex items-center justify-center mb-4"><span class="blinking-yellow">Mendeteksi jawaban...</span></div>
+      <button onclick="clearCanvas(2)" class="control-button text-white px-4 py-2 rounded-xl font-bold w-full hover:scale-105 transition-transform"> 🗑️ Hapus </button>
      </div>
     </div>
    </div>
+
+   <!-- Modal Input Nama Pemain (Baru) -->
+   <div id="playerNameModal" style="display:none;position:fixed;z-index:99999;top:0;left:0;width:133vw;height:133vh;background:rgba(5,9,23,0.9);align-items:center;justify-content:center;">
+    <div style="background:#232749;color:#fff;padding:26px 20px;border-radius:20px;min-width:340px;max-width:90vw;box-shadow:0 15px 35px rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.2);" class="slide-in">
+     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h2 style="font-size:20px;font-weight:bold;margin:0;">👤 Nama Pemain</h2>
+      <button onclick="closePlayerNameModal()" style="background:transparent;color:#ff4757;font-weight:bold;border:none;font-size:24px;cursor:pointer">✕</button>
+     </div>
+     
+     <div id="modal-player-inputs-container" style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px;">
+       <div class="player-card player1-card rounded-xl p-3">
+        <input type="text" id="player1-name" placeholder="Pemain 1" class="w-full px-3 py-2 rounded-lg bg-white/20 text-white placeholder-white/50 border border-white/30 focus:border-blue-400 focus:outline-none font-semibold text-center">
+       </div>
+       <div class="player-card player2-card rounded-xl p-3" id="modal-p2-input-box" style="display: none;">
+        <input type="text" id="player2-name" placeholder="Pemain 2" class="w-full px-3 py-2 rounded-lg bg-white/20 text-white placeholder-white/50 border border-white/30 focus:border-red-400 focus:outline-none font-semibold text-center">
+       </div>
+     </div>
+
+     <div style="display:flex;gap:10px;">
+      <button onclick="startGame()" style="background:linear-gradient(to right, #ec4899, #8b5cf6);color:#fff;font-weight:bold;border:none;border-radius:12px;font-size:16px;padding:12px 20px;cursor:pointer;flex:1;box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4)">🎮 Mulai</button>
+     </div>
+    </div>
+   </div>
+
    <!-- Modal Impor Soal -->
-<div id="importQuestionsModal" style="display:none;position:fixed;z-index:99999;top:0;left:0;width:133vw;height:133vh;background:rgba(5,9,23,0.97);align-items:center;justify-content:center;">
-  <div style="background:#232749;color:#fff;padding:22px 13px 13px 13px;border-radius:14px;min-width:340px;max-width:98vw;max-height:150vh;overflow-y:auto;box-shadow:0 7px 22px #0007;">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <h2 style="font-size:23px;margin:0 0 10px 0;">Edit Soal</h2>
-      <button onclick="closeImportQuestionsModal()" style="background:transparent;color:#ff4757;font-weight:bold;border:none;font-size:26px;cursor:pointer">X</button>
-    </div>
-    <div style="font-size:15px;margin-bottom:7px;color:#feca57">
+   <div id="importQuestionsModal" style="display:none;position:fixed;z-index:99999;top:0;left:0;width:133vw;height:133vh;background:rgba(5,9,23,0.95);align-items:center;justify-content:center;">
+    <div style="background:#232749;color:#fff;padding:22px 16px;border-radius:18px;min-width:380px;max-width:90vw;max-height:90vh;overflow-y:auto;box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <h2 style="font-size:20px;font-weight:bold;margin:0;">📥 Impor Soal</h2>
+      <button onclick="closeImportQuestionsModal()" style="background:transparent;color:#ff4757;font-weight:bold;border:none;font-size:24px;cursor:pointer">✕</button>
+     </div>
+     <div style="font-size:14px;margin-bottom:10px;color:#feca57;line-height:1.4;">
       <b>Format:</b><br>
-	     1. Tuliskan pertanyaan di baris pertama!<br> 
-	     2. Tuliskan empat buah pilihan jawaban di bawahnya!<br> 
-		 3. Tandai jawaban benar dengan tanda bintang (<code>*</code>)!<br> 
-		 4. Pisahkan pertanyaan berikutnya dengan baris kosong!<br>
-    </div>
-    <textarea id="importQuestionsTextarea"
-      style="width:100%;height:190px;border-radius:7px;font-size:15px;margin-bottom:11px;padding:7px 3px;
-      border:0px solid #333; color:#1565c0; background:#f5f7fa;"></textarea>
-    <div>
-      <button onclick="parseImportedQuestions()" style="background:#feca57;color:#222;font-weight:bold;border:none;border-radius:7px;font-size:16px;padding:8px 26px 8px 26px;box-shadow:0 3px 9px #1112;">Impor Soal</button>
-      <button onclick="closeImportQuestionsModal()" style="background:#bbb;color:#232749;border:none;border-radius:7px;font-size:16px;padding:8px 19px;margin-left:11px;">Batal</button>
-    </div>
-    <div style="font-size:13px;color:#b3b4bd;margin-top:13px;border-top:1px solid #434353;padding-top:12px">
+      - Tuliskan satu soal per baris.<br>- Penulisan: <code>"pernyataan=benar"</code> atau <code>"pernyataan=salah"</code>
+     </div>
+     <textarea id="importQuestionsTextarea" placeholder="Ketik/tempel soal di sini..."
+      style="width:100%;height:180px;border-radius:10px;font-size:14px;margin-bottom:12px;padding:10px;
+      border:1px solid rgba(255,255,255,0.2); color:#1565c0; background:#f5f7fa; font-family: monospace;"></textarea>
+     <div style="display:flex;gap:10px;">
+      <button onclick="parseImportedQuestions()" style="background:#00b894;color:#fff;font-weight:bold;border:none;border-radius:10px;font-size:15px;padding:10px 20px;cursor:pointer;flex:1;">Simpan Soal</button>
+      <button onclick="closeImportQuestionsModal()" style="background:#4b6584;color:#fff;border:none;border-radius:10px;font-size:15px;padding:10px 20px;cursor:pointer;">Batal</button>
+     </div>
+     <div style="font-size:12px;color:#b3b4bd;margin-top:14px;border-top:1px solid #434353;padding-top:10px;line-height:1.4;">
       <b>Contoh:</b><br>
       <code>
-        Apa arti puasa?<br>
-        *Menahan diri<br>
-        Berpasrah`<br>
-        Melarang<br>
-        Patuh<br><br>
-
-        Puasa wajib dilaksanakan pada Bulan...<br>
-        Sya'ban<br>
-        *Ramadhan<br>
-        Rajab<br>
-        Syawal<br><br>
-		<i>Catatan: Pertanyaan dan jawaban hanya dapat berupa teks,<br> 
-		tidak mendukung gambar, video, atau audio.</i>
+        Nabi Muhammad Saw. lahir di Kota Madinah=salah<br>
+        Ibu Nabi Muhammad Saw. bernama Siti Aminah=benar<br>
+        Puasa Ramadhan hukumnya wajib=benar
       </code>
+     </div>
     </div>
-  </div>
-</div>
-<!-- Tombol Import di kanan atas -->
-<button id="importQuestionBtn"
-  style="position:fixed;top:50px;right:50px;z-index:5001;background:#00b894;color:#fff;border:none;border-radius:11px;font-size:15px;padding:10px 23px;font-weight:bold;box-shadow:0 4px 16px #0003;cursor:pointer;opacity:0.93;">Impor Soal</button>
+   </div>
   </main>
+
   <script>
         let player1Score = 0;
         let player2Score = 0;
@@ -330,9 +341,9 @@
         let drawnPaths1 = [], drawnPaths2 = [];
         let player1Name = "Pemain 1";
         let player2Name = "Pemain 2";
+        let selectedGameMode = 'single'; // 'single' atau 'versus'
         
         const allQuestions = [
-            // Kelahiran Nabi Muhammad Saw.
             { statement: "Nabi Muhammad Saw. lahir pada Tahun Gajah.", isTrue: true },
             { statement: "Nabi Muhammad Saw. lahir di Kota Madinah.", isTrue: false },
             { statement: "Ayah Nabi Muhammad Saw. bernama Abdullah.", isTrue: true },
@@ -343,84 +354,47 @@
             { statement: "Nabi Muhammad Saw. lahir pada Bulan Ramadhan.", isTrue: false },
             { statement: "Kakek Nabi Muhammad Saw. bernama Abdul Muthalib.", isTrue: true },
             { statement: "Kakek Nabi Muhammad Saw. bernama Abu Thalib.", isTrue: false },
-            
-            // Masa Kecil
             { statement: "Semasa kecil, Nabi Muhammad Saw. diasuh oleh Halimah As-Sa'diyah.", isTrue: true },
-            { statement: "Halimah As-Sa'diyah adalah bibi Nabi Muhammad Saw.", isTrue: false },
-            { statement: "Nabi Muhammad Saw. menjadi yatim saat berusia 6 tahun.", isTrue: true },
-            { statement: "Nabi Muhammad Saw. menjadi yatim piatu sejak lahir.", isTrue: false },
-            { statement: "Setelah ibunda beliau meninggal, Nabi Muhammad Saw. diasuh oleh kakeknya.", isTrue: true },
-            { statement: "Setelah ibunda beliau meninggal, Nabi Muhammad Saw. diasuh oleh pamannya.", isTrue: false },
-            { statement: "Abdul Muthalib meninggal saat Nabi Muhammad Saw. berusia 8 tahun.", isTrue: true },
-            { statement: "Abdul Muthalib meninggal saat Nabi Muhammad Saw. berusia 15 tahun.", isTrue: false },
-            { statement: "Setelah kakek beliau meninggal, Abu Thalib yang mengasuh Nabi Muhammad Saw.", isTrue: true },
-            { statement: "Setelah kakek meninggal, Abu Abbas yang mengasuh Nabi Muhammad Saw.", isTrue: false },
-            
-            // Masa Remaja
             { statement: "Nabi Muhammad Saw. dikenal dengan sebutan Al-Amin.", isTrue: true },
-            { statement: "Nabi Muhammad Saw. dikenal dengan sebutan Al-Faruq.", isTrue: false },
-            { statement: "Al-Amin artinya yang orang dapat dipercaya.", isTrue: true },
             { statement: "Al-Amin artinya yang orang yang pemberani.", isTrue: false },
-            { statement: "Nabi Muhammad Saw. bekerja sebagai pedagang.", isTrue: true },
-            { statement: "Nabi Muhammad Saw. bekerja sebagai prajurit.", isTrue: false },
-            { statement: "Nabi Muhammad Saw. sering berdagang ke Negeri Syam.", isTrue: true },
-            { statement: "Nabi Muhammad Saw. sering berdagang ke Negeri Mesir.", isTrue: false },
-            { statement: "Nama 'Muhammad' berarti orang yang terpuji.", isTrue: true },
-            { statement: "Masyarakat Arab Pra-Islam sangat memuliakan perempuan.", isTrue: false },
-            { statement: "Suku Quraisy merupakan penjaga Ka'bah.", isTrue: true },
-            { statement: "Keluarga Nabi Muhammad Saw. berasal dari Bani Abbasiyah.", isTrue: false },
-            { statement: "Nabi Muhammad Saw. berasal dari Bani Hasyim.", isTrue: true },
-            { statement: "Nabi Muhammad Saw. dilahirkan hari Jumat.", isTrue: false },
-            
-            // Sifat dan Karakter
-            { statement: "Nabi Muhammad Saw. tidak pernah menyembah berhala.", isTrue: true },
-            { statement: "Nabi Muhammad Saw. pernah menyembah berhala sebelum menjadi nabi.", isTrue: false },
-            { statement: "Nabi Muhammad Saw. sering menyendiri di Gua Hira.", isTrue: true },
-            { statement: "Nabi Muhammad Saw. sering menyendiri di Gua Tsur.", isTrue: false },
-            { statement: "Nabi Muhammad Saw. dikenal jujur dalam berdagang.", isTrue: true },
-            { statement: "Nabi Muhammad Saw. pernah menipu dalam berdagang.", isTrue: false },
-            { statement: "Nabi Muhammad Saw. suka menolong orang yang kesusahan.", isTrue: true },
-            { statement: "Nabi Muhammad Saw. hanya menolong keluarganya saja.", isTrue: false },
-            
-            // Keluarga dan Keturunan
-            { statement: ".", isTrue: true },
-            { statement: "Nabi Muhammad Saw. memiliki anak perempuan bernama Aisyah.", isTrue: false },
-            { statement: "Nabi Muhammad Saw. memiliki anak laki-laki bernama Ibrahim.", isTrue: true },
-            { statement: "Nabi Muhammad Saw. memiliki anak laki-laki bernama Ali.", isTrue: false },
-            { statement: "Zainab adalah putri Nabi Muhammad Saw.", isTrue: true },
-            { statement: "Hafshah adalah putri Nabi Muhammad Saw.", isTrue: false },
-            { statement: "Ruqayyah adalah putri Nabi Muhammad Saw.", isTrue: true },
-            { statement: "Ummu Kultsum adalah putri Nabi Muhammad Saw.", isTrue: true },
-            { statement: "Nabi Muhammad Saw. memiliki 4 anak perempuan.", isTrue: true },
-            { statement: "Nabi Muhammad Saw. memiliki 3 anak perempuan.", isTrue: false },
-            
-            // Peristiwa Penting
-            { statement: "Masyarakat Arab Pra-Islam terdiri dari banyak suku yang bermusuhan.", isTrue: true },
-            { statement: "Masyarakat Arab tidak menyukai syair.", isTrue: false },
-            { statement: "Pada masa Jahiliyah, masyarakat Arab menyembah berhala.", isTrue: true },
-            { statement: "Ka'bah dibangun oleh Nabi Muhammad Saw. dengan para sahabat.", isTrue: false },
-            { statement: "Sebelum datangnya Islam, masyarakat Arab berada pada masa Jahiliyah.", isTrue: true },
-            { statement: "Kegiatan ekonomi utama masyarakat Arab sebelum Islam adalah berburu.", isTrue: false }
+            { statement: "Suku Quraisy merupakan penjaga Ka'bah.", isTrue: true }
         ];
         
+        let customQuestions = [];
         let questions = [];
+
+        function selectMode(mode) {
+            selectedGameMode = mode;
+            const singleBtn = document.getElementById('mode-single-btn');
+            const versusBtn = document.getElementById('mode-versus-btn');
+            const p2Box = document.getElementById('modal-p2-input-box');
+
+            if (mode === 'single') {
+                singleBtn.classList.add('mode-btn-active');
+                versusBtn.classList.remove('mode-btn-active');
+                p2Box.style.display = 'none';
+            } else {
+                versusBtn.classList.add('mode-btn-active');
+                singleBtn.classList.remove('mode-btn-active');
+                p2Box.style.display = 'block';
+            }
+        }
+
+        function openPlayerNameModal() {
+            document.getElementById('playerNameModal').style.display = 'flex';
+        }
+
+        function closePlayerNameModal() {
+            document.getElementById('playerNameModal').style.display = 'none';
+        }
         
         function selectRandomQuestions() {
-            const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
+            const pool = customQuestions.length > 0 ? customQuestions : allQuestions;
+            const shuffled = [...pool].sort(() => 0.5 - Math.random());
             questions = shuffled.slice(0, 10);
         }
 
-        // Default config for Element SDK
-        const defaultConfig = {
-            quiz_title: "⚔️ Drawing Quiz Versus",
-            instruction_text: "Dua pemain berkompetisi menggambar jawaban!",
-            welcome_message: "Selamat datang di mode versus yang seru!",
-            player1_name: "Pemain 1",
-            player2_name: "Pemain 2"
-        };
-
         function initCanvases() {
-            // Canvas 1
             canvas1 = document.getElementById('canvas1');
             ctx1 = canvas1.getContext('2d');
             ctx1.strokeStyle = '#3b82f6';
@@ -428,37 +402,32 @@
             ctx1.lineCap = 'round';
             ctx1.lineJoin = 'round';
             
-            // Canvas 2
-            canvas2 = document.getElementById('canvas2');
-            ctx2 = canvas2.getContext('2d');
-            ctx2.strokeStyle = '#ef4444';
-            ctx2.lineWidth = 3;
-            ctx2.lineCap = 'round';
-            ctx2.lineJoin = 'round';
-            
-            // Mouse events for Canvas 1
             canvas1.addEventListener('mousedown', (e) => startDrawing(1, e));
             canvas1.addEventListener('mousemove', (e) => draw(1, e));
             canvas1.addEventListener('mouseup', () => stopDrawing(1));
             canvas1.addEventListener('mouseout', () => stopDrawing(1));
-            
-            // Mouse events for Canvas 2
-            canvas2.addEventListener('mousedown', (e) => startDrawing(2, e));
-            canvas2.addEventListener('mousemove', (e) => draw(2, e));
-            canvas2.addEventListener('mouseup', () => stopDrawing(2));
-            canvas2.addEventListener('mouseout', () => stopDrawing(2));
-            
-            // Touch events
             canvas1.addEventListener('touchstart', (e) => handleTouch(1, e));
             canvas1.addEventListener('touchmove', (e) => handleTouch(1, e));
             canvas1.addEventListener('touchend', () => stopDrawing(1));
-            
-            canvas2.addEventListener('touchstart', (e) => handleTouch(2, e));
-            canvas2.addEventListener('touchmove', (e) => handleTouch(2, e));
-            canvas2.addEventListener('touchend', () => stopDrawing(2));
-            
             canvas1.classList.add('active');
-            canvas2.classList.add('active');
+
+            if (selectedGameMode === 'versus') {
+                canvas2 = document.getElementById('canvas2');
+                ctx2 = canvas2.getContext('2d');
+                ctx2.strokeStyle = '#ef4444';
+                ctx2.lineWidth = 3;
+                ctx2.lineCap = 'round';
+                ctx2.lineJoin = 'round';
+                
+                canvas2.addEventListener('mousedown', (e) => startDrawing(2, e));
+                canvas2.addEventListener('mousemove', (e) => draw(2, e));
+                canvas2.addEventListener('mouseup', () => stopDrawing(2));
+                canvas2.addEventListener('mouseout', () => stopDrawing(2));
+                canvas2.addEventListener('touchstart', (e) => handleTouch(2, e));
+                canvas2.addEventListener('touchmove', (e) => handleTouch(2, e));
+                canvas2.addEventListener('touchend', () => stopDrawing(2));
+                canvas2.classList.add('active');
+            }
         }
         
         function handleTouch(player, e) {
@@ -508,12 +477,8 @@
                 ctx.lineTo(e.offsetX, e.offsetY);
                 ctx.stroke();
                 
-                const currentPath = drawnPaths1[drawnPaths1.length - 1];
-                currentPath.push({ x: e.offsetX, y: e.offsetY });
-                
-                lastX1 = e.offsetX;
-                lastY1 = e.offsetY;
-                
+                drawnPaths1[drawnPaths1.length - 1].push({ x: e.offsetX, y: e.offsetY });
+                lastX1 = e.offsetX; lastY1 = e.offsetY;
                 detectShapeRealTime(1);
             } else {
                 ctx.beginPath();
@@ -521,22 +486,15 @@
                 ctx.lineTo(e.offsetX, e.offsetY);
                 ctx.stroke();
                 
-                const currentPath = drawnPaths2[drawnPaths2.length - 1];
-                currentPath.push({ x: e.offsetX, y: e.offsetY });
-                
-                lastX2 = e.offsetX;
-                lastY2 = e.offsetY;
-                
+                drawnPaths2[drawnPaths2.length - 1].push({ x: e.offsetX, y: e.offsetY });
+                lastX2 = e.offsetX; lastY2 = e.offsetY;
                 detectShapeRealTime(2);
             }
         }
         
         function stopDrawing(player) {
-            if (player === 1) {
-                isDrawing1 = false;
-            } else {
-                isDrawing2 = false;
-            }
+            if (player === 1) isDrawing1 = false;
+            else isDrawing2 = false;
         }
         
         function clearCanvas(player) {
@@ -549,11 +507,8 @@
             
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            if (player === 1) {
-                drawnPaths1 = [];
-            } else {
-                drawnPaths2 = [];
-            }
+            if (player === 1) drawnPaths1 = [];
+            else drawnPaths2 = [];
         }
         
         let detectionTimeout1 = null;
@@ -571,9 +526,7 @@
             
             if (detectedShape === 'checkmark' || detectedShape === 'cross') {
                 const timeout = player === 1 ? detectionTimeout1 : detectionTimeout2;
-                if (timeout) {
-                    clearTimeout(timeout);
-                }
+                if (timeout) clearTimeout(timeout);
                 
                 const newTimeout = setTimeout(() => {
                     if (!roundFinished && analyzeDrawing(player) === detectedShape) {
@@ -583,13 +536,10 @@
                             handleAnswer(2, detectedShape);
                         }
                     }
-                }, 2000);
+                }, 1500);
                 
-                if (player === 1) {
-                    detectionTimeout1 = newTimeout;
-                } else {
-                    detectionTimeout2 = newTimeout;
-                }
+                if (player === 1) detectionTimeout1 = newTimeout;
+                else detectionTimeout2 = newTimeout;
             }
         }
         
@@ -598,9 +548,7 @@
             if (paths.length === 0) return 'unknown';
             
             let allPoints = [];
-            paths.forEach(path => {
-                allPoints = allPoints.concat(path);
-            });
+            paths.forEach(path => { allPoints = allPoints.concat(path); });
             
             if (allPoints.length < 8) return 'unknown';
             
@@ -619,11 +567,8 @@
             const checkmarkScore = analyzeCheckmark(allPoints, minX, maxX, minY, maxY);
             const crossScore = analyzeCross(allPoints, minX, maxX, minY, maxY, centerX, centerY);
             
-            if (checkmarkScore > 0.25) {
-                return 'checkmark';
-            } else if (crossScore > 0.35) {
-                return 'cross';
-            }
+            if (checkmarkScore > 0.25) return 'checkmark';
+            else if (crossScore > 0.35) return 'cross';
             
             return 'unknown';
         }
@@ -654,12 +599,8 @@
             const leftScore = leftDownwardTrend / Math.max(leftPoints.length - 1, 1);
             const rightScore = rightUpwardTrend / Math.max(rightPoints.length - 1, 1);
             
-            const lowestPoint = points.reduce((lowest, point) => 
-                point.y > lowest.y ? point : lowest
-            );
-            
-            const junctionScore = (lowestPoint.x > minX + width * 0.2 && 
-                                 lowestPoint.x < minX + width * 0.8) ? 0.2 : 0;
+            const lowestPoint = points.reduce((lowest, point) => point.y > lowest.y ? point : lowest);
+            const junctionScore = (lowestPoint.x > minX + width * 0.2 && lowestPoint.x < minX + width * 0.8) ? 0.2 : 0;
             
             return (leftScore + rightScore) / 2 + junctionScore;
         }
@@ -676,40 +617,29 @@
             if (!hasTopLeftBottomRight && !hasTopRightBottomLeft) return 0;
             
             let diagonalScore = 0;
-            
             if (hasTopLeftBottomRight) {
                 const diagonal1Points = [...topLeft, ...bottomRight].sort((a, b) => a.x - b.x);
                 let diagonal1Trend = 0;
-                
                 for (let i = 1; i < diagonal1Points.length; i++) {
-                    const slope = (diagonal1Points[i].y - diagonal1Points[i-1].y) / 
-                                 (diagonal1Points[i].x - diagonal1Points[i-1].x);
+                    const slope = (diagonal1Points[i].y - diagonal1Points[i-1].y) / (diagonal1Points[i].x - diagonal1Points[i-1].x);
                     if (slope > 0) diagonal1Trend++;
                 }
-                
                 diagonalScore += diagonal1Trend / Math.max(diagonal1Points.length - 1, 1);
             }
-            
             if (hasTopRightBottomLeft) {
                 const diagonal2Points = [...topRight, ...bottomLeft].sort((a, b) => a.x - b.x);
                 let diagonal2Trend = 0;
-                
                 for (let i = 1; i < diagonal2Points.length; i++) {
-                    const slope = (diagonal2Points[i].y - diagonal2Points[i-1].y) / 
-                                 (diagonal2Points[i].x - diagonal2Points[i-1].x);
+                    const slope = (diagonal2Points[i].y - diagonal2Points[i-1].y) / (diagonal2Points[i].x - diagonal2Points[i-1].x);
                     if (slope < 0) diagonal2Trend++;
                 }
-                
                 diagonalScore += diagonal2Trend / Math.max(diagonal2Points.length - 1, 1);
             }
-            
             return diagonalScore / 2;
         }
         
         function handleAnswer(player, shape) {
             if (roundFinished) return;
-            if (player === 1 && player1Answered) return;
-            if (player === 2 && player2Answered) return;
             
             const currentQ = questions[currentQuestion];
             const userAnswer = shape === 'checkmark';
@@ -718,14 +648,9 @@
             const canvas = player === 1 ? canvas1 : canvas2;
             const feedback = document.getElementById(`feedback${player}`);
             
-            // Mark player as answered
-            if (player === 1) {
-                player1Answered = true;
-            } else {
-                player2Answered = true;
-            }
+            if (player === 1) player1Answered = true;
+            else player2Answered = true;
             
-            // Disable canvas
             canvas.style.pointerEvents = 'none';
             canvas.classList.remove('active');
             
@@ -734,10 +659,8 @@
                 feedback.innerHTML = '<span class="blinking-green">🎉 Benar!</span>';
                 feedback.classList.add('bounce');
                 
-                // Award points - first to answer correctly gets more points
                 let points = 10;
-                if ((player === 1 && !player2Answered) || (player === 2 && !player1Answered)) {
-                    // First to answer correctly gets bonus
+                if (selectedGameMode === 'versus' && ((player === 1 && !player2Answered) || (player === 2 && !player1Answered))) {
                     points = 15;
                 }
                 
@@ -750,48 +673,43 @@
                     document.getElementById('score2').textContent = player2Score;
                     document.getElementById('score2').parentElement.classList.add('bounce');
                 }
-                
                 createConfetti();
-                
             } else {
                 canvas.classList.add('incorrect');
                 feedback.innerHTML = '<span class="blinking-red">❌ Salah!</span>';
                 feedback.classList.add('shake');
             }
             
-            // Check if both players answered
-            if (player1Answered && player2Answered) {
+            if (selectedGameMode === 'single') {
                 roundFinished = true;
-                setTimeout(() => {
-                    nextQuestion();
-                }, 2500);
+                setTimeout(nextQuestion, 2000);
             } else {
-                // Wait for the other player (max 6 seconds)
-                setTimeout(() => {
-                    if (!roundFinished && (player1Answered || player2Answered)) {
-                        // Mark the other player as "no answer" and continue
-                        if (!player1Answered) {
-                            document.getElementById('feedback1').innerHTML = '<span class="text-gray-400">⏰ Waktu habis</span>';
-                            canvas1.style.pointerEvents = 'none';
-                            canvas1.classList.remove('active');
+                if (player1Answered && player2Answered) {
+                    roundFinished = true;
+                    setTimeout(nextQuestion, 2500);
+                } else {
+                    setTimeout(() => {
+                        if (!roundFinished && (player1Answered || player2Answered)) {
+                            if (!player1Answered) {
+                                document.getElementById('feedback1').innerHTML = '<span class="text-gray-400">⏰ Waktu habis</span>';
+                                canvas1.style.pointerEvents = 'none';
+                                canvas1.classList.remove('active');
+                            }
+                            if (!player2Answered) {
+                                document.getElementById('feedback2').innerHTML = '<span class="text-gray-400">⏰ Waktu habis</span>';
+                                canvas2.style.pointerEvents = 'none';
+                                canvas2.classList.remove('active');
+                            }
+                            roundFinished = true;
+                            setTimeout(nextQuestion, 1500);
                         }
-                        if (!player2Answered) {
-                            document.getElementById('feedback2').innerHTML = '<span class="text-gray-400">⏰ Waktu habis</span>';
-                            canvas2.style.pointerEvents = 'none';
-                            canvas2.classList.remove('active');
-                        }
-                        roundFinished = true;
-                        setTimeout(() => {
-                            nextQuestion();
-                        }, 1500);
-                    }
-                }, 6000);
+                    }, 6000);
+                }
             }
         }
         
         function createConfetti() {
             const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#dda0dd'];
-            
             for (let i = 0; i < 30; i++) {
                 setTimeout(() => {
                     const confetti = document.createElement('div');
@@ -805,52 +723,41 @@
                     confetti.style.pointerEvents = 'none';
                     confetti.style.zIndex = '9999';
                     confetti.style.animation = 'fall 2s linear forwards';
-                    
                     document.body.appendChild(confetti);
-                    
-                    setTimeout(() => {
-                        confetti.remove();
-                    }, 2000);
+                    setTimeout(() => confetti.remove(), 2000);
                 }, i * 30);
             }
         }
         
         function nextQuestion() {
             currentQuestion++;
-            
             if (currentQuestion >= questions.length) {
                 showFinalScore();
                 return;
             }
             
-            // Reset for next question
             roundFinished = false;
             player1Answered = false;
             player2Answered = false;
             
-            // Clear canvas states
             canvas1.classList.remove('correct', 'incorrect');
-            canvas2.classList.remove('correct', 'incorrect');
             canvas1.style.pointerEvents = 'auto';
-            canvas2.style.pointerEvents = 'auto';
             canvas1.classList.add('active');
-            canvas2.classList.add('active');
-            
-            // Clear canvases
             clearCanvas(1);
-            clearCanvas(2);
-            
-            // Clear feedback
             document.getElementById('feedback1').innerHTML = '<span class="blinking-yellow">Menunggu...</span>';
-            document.getElementById('feedback2').innerHTML = '<span class="blinking-yellow">Menunggu...</span>';
             document.getElementById('feedback1').classList.remove('bounce', 'shake');
-            document.getElementById('feedback2').classList.remove('bounce', 'shake');
-            
-            // Clear score animations
             document.getElementById('score1').parentElement.classList.remove('bounce');
-            document.getElementById('score2').parentElement.classList.remove('bounce');
+
+            if (selectedGameMode === 'versus') {
+                canvas2.classList.remove('correct', 'incorrect');
+                canvas2.style.pointerEvents = 'auto';
+                canvas2.classList.add('active');
+                clearCanvas(2);
+                document.getElementById('feedback2').innerHTML = '<span class="blinking-yellow">Menunggu...</span>';
+                document.getElementById('feedback2').classList.remove('bounce', 'shake');
+                document.getElementById('score2').parentElement.classList.remove('bounce');
+            }
             
-            // Load new question
             setTimeout(() => {
                 loadQuestion();
                 updateProgress();
@@ -861,7 +768,6 @@
             const q = questions[currentQuestion];
             const statementEl = document.getElementById('statement');
             statementEl.style.opacity = '0';
-            
             setTimeout(() => {
                 statementEl.textContent = q.statement;
                 statementEl.style.opacity = '1';
@@ -878,141 +784,84 @@
         
         function showFinalScore() {
             const main = document.querySelector('main');
-            const winner = player1Score > player2Score ? player1Name : 
-                          player2Score > player1Score ? player2Name : 'SERI';
             
-            const winnerEmoji = winner === 'SERI' ? '🤝' : '👑';
-            const winnerText = winner === 'SERI' ? 'Hasil Seri!' : `${winner} Menang!`;
-            
-            main.innerHTML = `
-                <div class="max-w-6xl mx-auto text-center">
-                    <div class="question-card rounded-3xl p-12">
-                        <div class="slide-in">
-                            <div class="text-9xl mb-8 bounce">${winnerEmoji}</div>
-                            <h1 class="text-6xl font-bold text-white mb-6 rainbow bg-clip-text text-transparent winner">
-                                ${winnerText}
-                            </h1>
-                            
-                            <!-- Final Scores -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 max-w-4xl mx-auto">
-                                <div class="player-card player1-card rounded-3xl p-8 ${player1Score >= player2Score ? 'winner' : ''}">
+            if (selectedGameMode === 'single') {
+                main.innerHTML = `
+                    <div class="max-w-6xl mx-auto text-center w-full">
+                        <div class="question-card rounded-3xl p-12">
+                            <div class="slide-in">
+                                <div class="text-9xl mb-8 bounce">🌟</div>
+                                <h1 class="text-6xl font-bold text-white mb-6 rainbow bg-clip-text text-transparent">
+                                    Permainan Selesai!
+                                </h1>
+                                <div class="player-card player1-card rounded-3xl p-8 max-w-xl mx-auto mb-8 winner">
                                     <h3 class="text-blue-300 font-bold text-2xl mb-4">${player1Name}</h3>
-                                    <div class="text-6xl font-bold text-white mb-2">${player1Score}</div>
-                                    <div class="text-blue-300">dari semua soal</div>
+                                    <div class="text-7xl font-bold text-white mb-2">${player1Score}</div>
+                                    <div class="text-blue-300 text-xl">Skor Perolehan</div>
                                 </div>
-                                <div class="player-card player2-card rounded-3xl p-8 ${player2Score >= player1Score ? 'winner' : ''}">
-                                    <h3 class="text-red-300 font-bold text-2xl mb-4">${player2Name}</h3>
-                                    <div class="text-6xl font-bold text-white mb-2">${player2Score}</div>
-                                    <div class="text-red-300">dari 100 poin</div>
-                                </div>
+                                <button onclick="location.reload()" class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-16 py-6 rounded-3xl font-bold text-2xl hover:scale-105 transition-transform shadow-2xl"> 🔄 Main Lagi </button>
                             </div>
-                            
-                            <div class="mb-8">
-                                ${winner !== 'SERI' ? 
-                                    '<p class="text-green-300 font-bold text-3xl">🎉 Selamat untuk pemenang! 🎉</p>' : 
-                                    '<p class="text-yellow-300 font-bold text-3xl">🤝 Permainan yang seru! 🤝</p>'
-                                }
-                            </div>
-                            
-                            <button onclick="location.reload()" 
-                                    class="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-16 py-6 rounded-3xl font-bold text-2xl hover:from-purple-600 hover:to-pink-700 transition-all duration-300 transform hover:scale-105 shadow-2xl">
-                                ⚔️ Main Lagi
-                            </button>
                         </div>
                     </div>
-                </div>
-            `;
-            
-            // Add celebration confetti
-            setTimeout(() => {
-                createConfetti();
-            }, 500);
-        }
-
-        // Element SDK Implementation
-        async function onConfigChange(config) {
-            const quizTitle = config.quiz_title || defaultConfig.quiz_title;
-            const instructionText = config.instruction_text || defaultConfig.instruction_text;
-            const welcomeMessage = config.welcome_message || defaultConfig.welcome_message;
-            const player1NameConfig = config.player1_name || defaultConfig.player1_name;
-            const player2NameConfig = config.player2_name || defaultConfig.player2_name;
-
-            // Update UI elements if they exist
-            const titleElement = document.getElementById('quiz-title');
-            const instructionElement = document.getElementById('instruction-text');
-            const welcomeElement = document.getElementById('welcome-message');
-
-            if (titleElement) titleElement.textContent = quizTitle;
-            if (instructionElement) instructionElement.textContent = instructionText;
-            if (welcomeElement) welcomeElement.textContent = welcomeMessage;
-            
-            // Update player name inputs
-            const player1Input = document.getElementById('player1-name');
-            const player2Input = document.getElementById('player2-name');
-            if (player1Input) player1Input.placeholder = player1NameConfig;
-            if (player2Input) player2Input.placeholder = player2NameConfig;
-        }
-
-        function mapToCapabilities(config) {
-            return {
-                recolorables: [],
-                borderables: [],
-                fontEditable: undefined,
-                fontSizeable: undefined
-            };
-        }
-
-        function mapToEditPanelValues(config) {
-            return new Map([
-                ["quiz_title", config.quiz_title || defaultConfig.quiz_title],
-                ["instruction_text", config.instruction_text || defaultConfig.instruction_text],
-                ["welcome_message", config.welcome_message || defaultConfig.welcome_message],
-                ["player1_name", config.player1_name || defaultConfig.player1_name],
-                ["player2_name", config.player2_name || defaultConfig.player2_name]
-            ]);
-        }
-
-        // Initialize Element SDK
-        if (window.elementSdk) {
-            window.elementSdk.init({
-                defaultConfig,
-                onConfigChange,
-                mapToCapabilities,
-                mapToEditPanelValues
-            });
-        }
-
-        // Add CSS for confetti animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes fall {
-                0% {
-                    transform: translateY(-100vh) rotate(0deg);
-                    opacity: 1;
-                }
-                100% {
-                    transform: translateY(100vh) rotate(360deg);
-                    opacity: 0;
-                }
+                `;
+            } else {
+                const winner = player1Score > player2Score ? player1Name : player2Score > player1Score ? player2Name : 'SERI';
+                const winnerEmoji = winner === 'SERI' ? '🤝' : '👑';
+                const winnerText = winner === 'SERI' ? 'Hasil Seri!' : `${winner} Menang!`;
+                
+                main.innerHTML = `
+                    <div class="max-w-6xl mx-auto text-center w-full">
+                        <div class="question-card rounded-3xl p-12">
+                            <div class="slide-in">
+                                <div class="text-9xl mb-8 bounce">${winnerEmoji}</div>
+                                <h1 class="text-6xl font-bold text-white mb-6 rainbow bg-clip-text text-transparent winner">
+                                    ${winnerText}
+                                </h1>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 max-w-4xl mx-auto">
+                                    <div class="player-card player1-card rounded-3xl p-8 ${player1Score >= player2Score ? 'winner' : ''}">
+                                        <h3 class="text-blue-300 font-bold text-2xl mb-4">${player1Name}</h3>
+                                        <div class="text-6xl font-bold text-white mb-2">${player1Score}</div>
+                                        <div class="text-blue-300">Poin</div>
+                                    </div>
+                                    <div class="player-card player2-card rounded-3xl p-8 ${player2Score >= player1Score ? 'winner' : ''}">
+                                        <h3 class="text-red-300 font-bold text-2xl mb-4">${player2Name}</h3>
+                                        <div class="text-6xl font-bold text-white mb-2">${player2Score}</div>
+                                        <div class="text-red-300">Poin</div>
+                                    </div>
+                                </div>
+                                <button onclick="location.reload()" class="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-16 py-6 rounded-3xl font-bold text-2xl hover:scale-105 transition-transform shadow-2xl"> ⚔️ Main Lagi </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
             }
-        `;
+            setTimeout(createConfetti, 500);
+        }
+
+        const style = document.createElement('style');
+        style.textContent = `@keyframes fall { 0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(360deg); opacity: 0; } }`;
         document.head.appendChild(style);
 
-        function startVersusGame() {
-            // Get player names
-            const player1Input = document.getElementById('player1-name').value.trim();
-            const player2Input = document.getElementById('player2-name').value.trim();
-            
-            player1Name = player1Input || 'Pemain 1';
-            player2Name = player2Input || 'Pemain 2';
-            
-            // Update displays
+        function startGame() {
+            const p1 = document.getElementById('player1-name').value.trim();
+            player1Name = p1 || 'Pemain 1';
             document.getElementById('player1-display').textContent = player1Name;
-            document.getElementById('player2-display').textContent = player2Name;
             document.getElementById('player1-name-display').textContent = player1Name;
-            document.getElementById('player2-name-display').textContent = player2Name;
+
+            if (selectedGameMode === 'versus') {
+                const p2 = document.getElementById('player2-name').value.trim();
+                player2Name = p2 || 'Pemain 2';
+                document.getElementById('player2-display').textContent = player2Name;
+                document.getElementById('player2-name-display').textContent = player2Name;
+                document.getElementById('question-hint').style.display = 'block';
+            } else {
+                document.getElementById('player2-score-card').style.display = 'none';
+                document.getElementById('player2-canvas-card').style.display = 'none';
+                document.getElementById('canvas-container').classList.remove('lg:grid-cols-2');
+                document.getElementById('question-hint').style.display = 'none';
+            }
             
-            // Start game
+            closePlayerNameModal();
             document.getElementById('title-screen').style.display = 'none';
             document.getElementById('game-screen').style.display = 'block';
             
@@ -1022,68 +871,54 @@
             updateProgress();
         }
 
-        // Initialize application
-        document.addEventListener('DOMContentLoaded', function() {
-            // Show title screen first
-        });
-		// TOMBOL BARU
-document.getElementById('importQuestionBtn').onclick = showImportQuestionsModal;
+        function openImportModal() {
+            document.getElementById('importQuestionsTextarea').value = '';
+            document.getElementById('importQuestionsModal').style.display = 'flex';
+        }
 
-// TAMPILKAN MODAL IMPOR
-function showImportQuestionsModal() {
-    document.getElementById('importQuestionsTextarea').value = '';
-    document.getElementById('importQuestionsModal').style.display = 'flex';
-}
-function closeImportQuestionsModal() {
-    document.getElementById('importQuestionsModal').style.display = 'none';
-}
+        function closeImportQuestionsModal() {
+            document.getElementById('importQuestionsModal').style.display = 'none';
+        }
 
-// PARSE dan IMPOR, format tanpa #
-function parseImportedQuestions() {
-    const txt = document.getElementById('importQuestionsTextarea').value.trim();
-    if (!txt) {
-        alert('Teks soal kosong!');
-        return;
-    }
-
-    // Split by double newlines (or more) to get all question blocks
-    let rawBlocks = txt.split(/\n\s*\n/g).map(b => b.trim()).filter(Boolean);
-    let imported = [];
-
-    for(const block of rawBlocks) {
-        const lines = block.split('\n').map(l=>l.trim()).filter(Boolean);
-        if(lines.length < 3) continue; // 1 pertanyaan + minimal 2 jawaban
-
-        let q = { 
-            question: lines[0],
-            answers: [],
-            correct: 0
-        };
-        for(let i=1;i<lines.length;i++) {
-            let line = lines[i];
-            if(line.startsWith('*')) {
-                line = line.replace(/^\*/, '').trim();
-                q.correct = q.answers.length;
-                q.answers.push(line);
-            } else {
-                q.answers.push(line);
+        function parseImportedQuestions() {
+            const txt = document.getElementById('importQuestionsTextarea').value.trim();
+            if (!txt) {
+                alert('Teks soal kosong!');
+                return;
             }
-        }
-        // Validasi
-        if(q.answers.length >= 2 && typeof q.correct === "number" && q.answers[q.correct]) {
-            imported.push(q);
-        }
-    }
 
-    if(imported.length < 1){
-        alert('Format salah atau tidak ada soal valid!');
-        return;
-    }
-    questions.length = 0;
-    for(let q of imported) questions.push(q);
-    closeImportQuestionsModal();
-    alert('Berhasil mengimpor ' + imported.length + ' soal!\nPastikan soal tersimpan sebelum bermain.');
-}
+            let rawLines = txt.split('\n').map(l => l.trim()).filter(Boolean);
+            let imported = [];
+
+            for (const line of rawLines) {
+                const parts = line.split('=');
+                if (parts.length >= 2) {
+                    const statement = parts[0].trim();
+                    const answer = parts[1].trim().toLowerCase();
+                    
+                    if (answer === 'benar' || answer === 'salah') {
+                        imported.push({
+                            statement: statement,
+                            isTrue: answer === 'benar'
+                        });
+                    }
+                }
+            }
+
+            if (imported.length < 1) {
+                alert('Format salah atau tidak ada soal valid!\nGunakan format: pernyataan=benar atau pernyataan=salah');
+                return;
+            }
+
+            customQuestions = imported;
+            closeImportQuestionsModal();
+
+            const badge = document.getElementById('imported-count-badge');
+            badge.textContent = `${imported.length} soal tersimpan`;
+            badge.style.display = 'inline-block';
+            
+            alert(`Berhasil mengimpor ${imported.length} soal!\nSoal ini akan dimainkan saat Anda memulai pertarungan.`);
+        }
     </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99feee19b236e9d3',t:'MTc2MzM3OTM4My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ </body>
 </html>
